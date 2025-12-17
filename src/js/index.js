@@ -15,6 +15,7 @@ import { resizeScanFrame } from './helpers/resizeScanFrame.js';
 import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { toastify } from './helpers/toastify.js';
+import { fillCodeFields } from './helpers/fillCodeFields.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/bs-result.js';
@@ -118,6 +119,7 @@ import './components/bs-history.js';
       }
 
       createResult(cameraResultsEl, barcodeValue);
+      fillCodeFields(barcodeValue);
 
       if (settings?.addToHistory) {
         bsHistoryEl?.add(barcodeValue);
@@ -224,6 +226,7 @@ import './components/bs-history.js';
           }
 
           createResult(fileResultsEl, barcodeValue);
+          fillCodeFields(barcodeValue);
 
           if (settings?.addToHistory) {
             bsHistoryEl?.add(barcodeValue);
