@@ -43,6 +43,7 @@ import './components/bs-history.js';
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsDialog = document.getElementById('settingsDialog');
   const settingsForm = document.getElementById('settingsForm');
+  const contactForm = document.getElementById('contactForm');
   const cameraSelect = document.getElementById('cameraSelect');
   const SCAN_RATE_LIMIT = 1000;
   let scanTimeoutId = null;
@@ -552,12 +553,25 @@ import './components/bs-history.js';
     toastify(message, { variant: 'danger' });
   }
 
+  /**
+   * Handles the submit event on the contact form.
+   * Prevents the default form submission behavior to avoid resetting input fields.
+   *
+   * @param {Event} evt - The event object.
+   */
+  function handleContactFormSubmit(evt) {
+    evt.preventDefault();
+    // Form submission logic can be added here if needed
+    // For now, we just prevent the default behavior to keep input fields intact
+  }
+
   scanBtn.addEventListener('click', handleScanButtonClick);
   tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));
   dropzoneEl.addEventListener('files-dropzone-drop', handleFileDrop);
   resizeObserverEl.addEventListener('resize-observer:resize', handleVideoCaptureResize);
   settingsBtn.addEventListener('click', handleSettingsButtonClick);
   settingsForm.addEventListener('change', debounce(handleSettingsFormChange, 500));
+  contactForm?.addEventListener('submit', handleContactFormSubmit);
   historyBtn.addEventListener('click', handleHistoryButtonClick);
   document.addEventListener('visibilitychange', handleDocumentVisibilityChange);
   document.addEventListener('keydown', handleDocumentKeyDown);
