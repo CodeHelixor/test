@@ -16,6 +16,7 @@ import { BarcodeReader } from './helpers/BarcodeReader.js';
 import { toggleTorchButtonStatus } from './helpers/toggleTorchButtonStatus.js';
 import { toastify } from './helpers/toastify.js';
 import { fillCodeFields } from './helpers/fillCodeFields.js';
+import { sendBarcodeEmail } from './helpers/emailService.js';
 import { VideoCapture } from './components/video-capture.js';
 import './components/clipboard-copy.js';
 import './components/bs-result.js';
@@ -555,14 +556,84 @@ import './components/bs-history.js';
 
   /**
    * Handles the submit event on the contact form.
-   * Prevents the default form submission behavior to avoid resetting input fields.
+   * Collects form data and sends an email with the three barcode codes.
    *
    * @param {Event} evt - The event object.
    */
-  function handleContactFormSubmit(evt) {
+  async function handleContactFormSubmit(evt) {
     evt.preventDefault();
-    // Form submission logic can be added here if needed
-    // For now, we just prevent the default behavior to keep input fields intact
+
+    const submitButton = evt.target.querySelector('button[type="submit"]');
+    const code1El = document.getElementById('code1');
+    const code2El = document.getElementById('code2');
+    const code3El = document.getElementById('code3');
+    const phoneNumberEl = document.getElementById('phoneNumber');
+    const emailEl = document.getElementById('email');
+
+    // Collect form data
+    const formData = {
+      code1: code1El?.value?.trim() || '',
+      code2: code2El?.value?.trim() || '',
+      code3: code3El?.value?.trim() || '',
+      phoneNumber: phoneNumberEl?.value?.trim() || '',
+      email: emailEl?.value?.trim() || ''
+    };
+
+    // Validate that at least one barcode code is provided
+    if (!formData.code1 && !formData.code2 && !formData.code3) {
+      toastify(
+        '<strong>Error</strong><br><small>Please scan at least one barcode code before submitting.</small>',
+        { variant: 'danger', trustDangerousInnerHTML: true }
+      );
+      return;
+    }
+
+    // Validate email
+    if (!formData.email) {
+      toastify(
+        '<strong>Error</strong><br><small>Please enter an email address.</small>',
+        { variant: 'danger', trustDangerousInnerHTML: true }
+      );
+      emailEl?.focus();
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toastify(
+        '<strong>Error</strong><br><small>Please enter a valid email address.</small>',
+        { variant: 'danger', trustDangerousInnerHTML: true }
+      );
+      emailEl?.focus();
+      return;
+    }
+
+    try {
+      await sendBarcodeEmail(formData);
+
+      toastify(
+        '<strong>Gmail opened!</strong><br><small>Gmail.com should open in a new tab with the barcode results. Please click "Send" to complete.</small>',
+        { variant: 'success', trustDangerousInnerHTML: true, duration: 8000 }
+      );
+    } catch (error) {
+      log.error('Failed to open email client:', error);
+
+      let errorMessage = 'Failed to open Gmail. Please try again.';
+      
+      if (error.message.includes('at least one barcode')) {
+        errorMessage = 'Please scan at least one barcode code before submitting.';
+      } else if (error.message.includes('email address is required')) {
+        errorMessage = 'Please enter an email address.';
+      } else if (error.message.includes('Gmail') || error.message.includes('popup')) {
+        errorMessage = error.message;
+      }
+
+      toastify(
+        `<strong>Error</strong><br><small>${errorMessage}</small>`,
+        { variant: 'danger', trustDangerousInnerHTML: true, duration: 6000 }
+      );
+    }
   }
 
   scanBtn.addEventListener('click', handleScanButtonClick);
